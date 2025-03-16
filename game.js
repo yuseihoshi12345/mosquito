@@ -344,6 +344,26 @@ function draw() {
                 ctx.fillStyle = '#FFA500';
                 ctx.fillText('New Record!', canvas.width/2, canvas.height/2 + 20);
             }
+
+            // リスタートボタンの描画
+            const buttonWidth = 160;
+            const buttonHeight = 40;
+            const buttonX = canvas.width/2 - buttonWidth/2;
+            const buttonY = canvas.height/2 + 50;
+
+            // ボタンの背景
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+            // ボタンの境界線
+            ctx.strokeStyle = '#45a049';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+            // ボタンのテキスト
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText('リスタート', canvas.width/2, buttonY + buttonHeight/2);
             
             // 影をリセット
             ctx.shadowColor = 'transparent';
@@ -490,9 +510,7 @@ function gameLoop() {
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault();
-        if (gameOver) {
-            initGame();
-        } else {
+        if (!gameOver) {
             bird.jump();
         }
     }
@@ -500,22 +518,33 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    if (gameOver) {
-        initGame();
-    } else {
+    if (!gameOver) {
         bird.jump();
     }
 });
 
 canvas.addEventListener('click', (e) => {
     if (gameOver) {
-        initGame();
+        // クリック位置の取得
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // リスタートボタンの領域
+        const buttonWidth = 160;
+        const buttonHeight = 40;
+        const buttonX = canvas.width/2 - buttonWidth/2;
+        const buttonY = canvas.height/2 + 50;
+
+        // ボタンがクリックされたかチェック
+        if (x >= buttonX && x <= buttonX + buttonWidth &&
+            y >= buttonY && y <= buttonY + buttonHeight) {
+            initGame();
+        }
     } else {
         bird.jump();
     }
 });
-
-restartButton.addEventListener('click', initGame);
 
 // ゲームを初期化
 initGame(); 
