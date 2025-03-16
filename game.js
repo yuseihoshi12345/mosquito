@@ -33,6 +33,7 @@ let isGameStarted = false;
 let isTitleScreen = true;
 let pipeGeneratorInterval = null;
 let titleAnimationTime = 0; // タイトルアニメーション用のタイマー
+let isTouchDevice = false; // タッチデバイスかどうかを判定するフラグ
 
 // 鳥のオブジェクト
 const bird = {
@@ -604,18 +605,42 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         if (!gameOver) {
             bird.jump();
+        } else {
+            initGame();
         }
     }
 });
 
 document.addEventListener('touchstart', (e) => {
     e.preventDefault();
+    isTouchDevice = true; // タッチイベントが発生したらタッチデバイスとして記録
     if (!gameOver) {
         bird.jump();
+    } else {
+        // ゲームオーバー時の処理
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        // リスタートボタンの領域
+        const buttonWidth = 160;
+        const buttonHeight = 40;
+        const buttonX = canvas.width/2 - buttonWidth/2;
+        const buttonY = canvas.height/2 + 50;
+
+        // ボタンがタッチされたかチェック
+        if (x >= buttonX && x <= buttonX + buttonWidth &&
+            y >= buttonY && y <= buttonY + buttonHeight) {
+            initGame();
+        }
     }
 });
 
 canvas.addEventListener('click', (e) => {
+    // タッチデバイスの場合はclickイベントを無視
+    if (isTouchDevice) return;
+
     if (gameOver) {
         // クリック位置の取得
         const rect = canvas.getBoundingClientRect();
