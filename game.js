@@ -21,8 +21,8 @@ window.addEventListener('resize', () => {
 });
 
 // ゲーム設定
-const gravity = 0.25;
-const jumpForce = -7;
+const gravity = 0.35;
+const jumpForce = -5.5;
 const pipeGap = 150;
 const pipeWidth = 50;
 const pipeSpawnInterval = 2000;
@@ -103,86 +103,283 @@ function createPipe() {
 
 // パイプを描画
 function drawPipe(x, topHeight, bottomY) {
-    const pipeBodyColor = '#2E8B57';
-    const pipeBorderColor = '#1B5233';
-    const pipeHighlightColor = '#3CB371';
-    const pipeShadowColor = '#1a472a';
-    
-    // 上部パイプ
-    // メインボディ
-    ctx.fillStyle = pipeBodyColor;
-    ctx.fillRect(x, 0, pipeWidth, topHeight);
-    
-    // 右側の影
-    ctx.fillStyle = pipeShadowColor;
-    ctx.fillRect(x + pipeWidth - 5, 0, 5, topHeight);
-    
-    // 左側のハイライト
-    ctx.fillStyle = pipeHighlightColor;
-    ctx.fillRect(x, 0, 3, topHeight);
-    
-    // パイプの先端（上部）
-    const lipSize = 8; // 先端の出っ張りサイズ
-    ctx.fillStyle = pipeBodyColor;
-    ctx.fillRect(x - lipSize, topHeight - 20, pipeWidth + lipSize * 2, 20);
-    
-    // 先端の影とハイライト
-    ctx.fillStyle = pipeShadowColor;
-    ctx.fillRect(x + pipeWidth - 5, topHeight - 20, 5, 20);
-    ctx.fillRect(x - lipSize, topHeight - 5, pipeWidth + lipSize * 2, 5);
-    ctx.fillStyle = pipeHighlightColor;
-    ctx.fillRect(x - lipSize, topHeight - 20, 3, 20);
-    
-    // 下部パイプ
-    // メインボディ
-    ctx.fillStyle = pipeBodyColor;
-    ctx.fillRect(x, bottomY, pipeWidth, canvas.height - bottomY);
-    
-    // 右側の影
-    ctx.fillStyle = pipeShadowColor;
-    ctx.fillRect(x + pipeWidth - 5, bottomY, 5, canvas.height - bottomY);
-    
-    // 左側のハイライト
-    ctx.fillStyle = pipeHighlightColor;
-    ctx.fillRect(x, bottomY, 3, canvas.height - bottomY);
-    
-    // パイプの先端（下部）
-    ctx.fillStyle = pipeBodyColor;
-    ctx.fillRect(x - lipSize, bottomY, pipeWidth + lipSize * 2, 20);
-    
-    // 先端の影とハイライト
-    ctx.fillStyle = pipeShadowColor;
-    ctx.fillRect(x + pipeWidth - 5, bottomY, 5, 20);
-    ctx.fillRect(x - lipSize, bottomY + 15, pipeWidth + lipSize * 2, 5);
-    ctx.fillStyle = pipeHighlightColor;
-    ctx.fillRect(x - lipSize, bottomY, 3, 20);
-    
-    // パイプの輪郭線
-    ctx.strokeStyle = pipeBorderColor;
-    ctx.lineWidth = 1;
-    
-    // 上部パイプの輪郭
-    ctx.strokeRect(x, 0, pipeWidth, topHeight);
-    ctx.strokeRect(x - lipSize, topHeight - 20, pipeWidth + lipSize * 2, 20);
-    
-    // 下部パイプの輪郭
-    ctx.strokeRect(x, bottomY, pipeWidth, canvas.height - bottomY);
-    ctx.strokeRect(x - lipSize, bottomY, pipeWidth + lipSize * 2, 20);
-    
-    // 装飾的な溝（上部）
-    for (let i = 30; i < topHeight - 30; i += 30) {
-        ctx.fillStyle = pipeShadowColor;
-        ctx.fillRect(x + 10, i, pipeWidth - 20, 2);
-        ctx.fillStyle = pipeHighlightColor;
-        ctx.fillRect(x + 10, i + 2, pipeWidth - 20, 1);
+    const vineGradient = ctx.createLinearGradient(x, 0, x + pipeWidth, 0);
+    vineGradient.addColorStop(0, '#1B4D2E');  // 暗い緑
+    vineGradient.addColorStop(0.3, '#2E8B57'); // メインの緑
+    vineGradient.addColorStop(0.7, '#2E8B57'); // メインの緑
+    vineGradient.addColorStop(1, '#1B4D2E');   // 暗い緑
+
+    const stemWidth = 15;  // より細い蔓
+    const time = performance.now() * 0.001; // アニメーション用の時間
+
+    // 蔓を描く関数（うねうねした形状）
+    function drawVine(startX, startY, endY) {
+        const segments = 20;
+        const amplitude = 3; // 振幅を小さく
+        const frequency = 0.05; // 周波数を小さく
+
+        ctx.beginPath();
+        ctx.moveTo(startX + stemWidth/2, startY);
+
+        for (let i = 0; i <= segments; i++) {
+            const y = startY + (endY - startY) * (i / segments);
+            const wave = Math.sin(y * frequency + time * 0.5) * amplitude; // 時間の係数を小さく
+            const x = startX + stemWidth/2 + wave;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+
+        // 蔓の右側
+        for (let i = segments; i >= 0; i--) {
+            const y = startY + (endY - startY) * (i / segments);
+            const wave = Math.sin(y * frequency + time) * amplitude;
+            const x = startX + stemWidth/2 + wave + stemWidth;
+            ctx.lineTo(x, y);
+        }
+
+        ctx.closePath();
+        ctx.fillStyle = vineGradient;
+        ctx.fill();
+
+        // 蔓の質感（筋）を追加
+        const stripeCount = Math.floor((endY - startY) / 20);
+        for (let i = 0; i < stripeCount; i++) {
+            const y = startY + i * 20;
+            const wave = Math.sin(y * frequency + time) * amplitude;
+            ctx.beginPath();
+            ctx.moveTo(startX + wave, y);
+            ctx.lineTo(startX + stemWidth + wave, y);
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
     }
+
+    // 葉を描画する関数
+    function drawLeaf(baseX, baseY, angle, size, direction) {
+        ctx.save();
+        ctx.translate(baseX, baseY);
+        ctx.rotate(angle);
+        ctx.scale(direction, 1);
+
+        // 葉の形状
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        
+        // より自然な葉の形状
+        ctx.bezierCurveTo(
+            size * 0.2, -size * 0.2,
+            size * 0.6, -size * 0.3,
+            size, -size * 0.1
+        );
+        ctx.bezierCurveTo(
+            size * 0.8, size * 0.1,
+            size * 0.6, size * 0.2,
+            0, 0
+        );
+
+        // グラデーションで葉の色を表現
+        const leafGradient = ctx.createLinearGradient(-size * 0.2, 0, size, 0);
+        leafGradient.addColorStop(0, '#1B4D2E');   // 根元は暗め
+        leafGradient.addColorStop(0.3, '#32CD32');  // 中央は明るい緑
+        leafGradient.addColorStop(1, '#228B22');    // 先端は中間的な緑
+
+        ctx.fillStyle = leafGradient;
+        ctx.fill();
+
+        // 葉脈を描画
+        const veinCount = 5;
+        for (let i = 0; i < veinCount; i++) {
+            ctx.beginPath();
+            const startX = size * 0.1;
+            const endX = size * 0.8;
+            const offsetY = (i - (veinCount-1)/2) * (size * 0.1);
+            
+            ctx.moveTo(startX, offsetY * 0.5);
+            ctx.bezierCurveTo(
+                size * 0.4, offsetY,
+                size * 0.6, offsetY,
+                endX, offsetY * 0.7
+            );
+            
+            ctx.strokeStyle = 'rgba(0, 50, 0, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // 葉の縁を強調
+        ctx.strokeStyle = 'rgba(0, 40, 0, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 影を追加
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        ctx.restore();
+    }
+
+    // 上部の蔓を描画
+    drawVine(x + (pipeWidth - stemWidth)/2, 0, topHeight);
+
+    // 下部の蔓を描画
+    drawVine(x + (pipeWidth - stemWidth)/2, bottomY, canvas.height);
+
+    // 葉を追加（より自然な配置と動き）
+    const leafSpacing = 25;
+    const leafTime = time * 0.2; // アニメーション速度をさらに遅く
+
+    // 上部の蔓の葉
+    for (let i = 30; i < topHeight - 20; i += leafSpacing) {
+        const waveX = Math.sin(i * 0.01 + leafTime) * 2; // 振幅をさらに小さく、周波数も下げる
+        const waveAngle = Math.sin(i * 0.01 + leafTime) * 0.05; // 角度の変化をさらに小さく
+        const baseSize = 25 + Math.sin(i * 0.02) * 2; // サイズの変化をさらに小さく
+        
+        // 左側の葉（複数の層）
+        for (let layer = 0; layer < 3; layer++) {
+            const layerOffset = layer * 10;
+            const sizeVariation = (Math.random() * 4 - 2); // サイズのばらつきを小さく
+            drawLeaf(
+                x + (pipeWidth - stemWidth)/2 - 5 + waveX - layerOffset,
+                i + (Math.random() * 4 - 2), // 位置のばらつきを小さく
+                -Math.PI * 0.5 + waveAngle + (Math.random() * 0.05 - 0.025), // 角度のばらつきを小さく
+                baseSize + sizeVariation,
+                1
+            );
+        }
+        
+        // 右側の葉（複数の層）
+        for (let layer = 0; layer < 3; layer++) {
+            const layerOffset = layer * 10;
+            const sizeVariation = (Math.random() * 4 - 2);
+            drawLeaf(
+                x + (pipeWidth + stemWidth)/2 + 5 - waveX + layerOffset,
+                i + leafSpacing/2 + (Math.random() * 4 - 2),
+                Math.PI * 0.5 - waveAngle + (Math.random() * 0.05 - 0.025),
+                baseSize + sizeVariation,
+                -1
+            );
+        }
+
+        // 追加の装飾的な小さな葉（出現頻度を下げる）
+        if (Math.random() < 0.15) {
+            drawLeaf(
+                x + pipeWidth/2 + (Math.random() * 16 - 8),
+                i + Math.random() * leafSpacing,
+                Math.random() * Math.PI * 2,
+                10 + Math.random() * 4,
+                Math.random() < 0.5 ? 1 : -1
+            );
+        }
+    }
+
+    // 下部の蔓の葉（上部と同じパラメータ）
+    for (let i = bottomY + 30; i < canvas.height - 20; i += leafSpacing) {
+        const waveX = Math.sin(i * 0.01 + leafTime) * 2;
+        const waveAngle = Math.sin(i * 0.01 + leafTime) * 0.05;
+        const baseSize = 25 + Math.sin(i * 0.02) * 2;
+        
+        // 左側の葉（複数の層）
+        for (let layer = 0; layer < 3; layer++) {
+            const layerOffset = layer * 10;
+            const sizeVariation = (Math.random() * 4 - 2);
+            drawLeaf(
+                x + (pipeWidth - stemWidth)/2 - 5 + waveX - layerOffset,
+                i + (Math.random() * 4 - 2),
+                -Math.PI * 0.5 + waveAngle + (Math.random() * 0.05 - 0.025),
+                baseSize + sizeVariation,
+                1
+            );
+        }
+        
+        // 右側の葉（複数の層）
+        for (let layer = 0; layer < 3; layer++) {
+            const layerOffset = layer * 10;
+            const sizeVariation = (Math.random() * 4 - 2);
+            drawLeaf(
+                x + (pipeWidth + stemWidth)/2 + 5 - waveX + layerOffset,
+                i + leafSpacing/2 + (Math.random() * 4 - 2),
+                Math.PI * 0.5 - waveAngle + (Math.random() * 0.05 - 0.025),
+                baseSize + sizeVariation,
+                -1
+            );
+        }
+
+        // 追加の装飾的な小さな葉
+        if (Math.random() < 0.15) {
+            drawLeaf(
+                x + pipeWidth/2 + (Math.random() * 16 - 8),
+                i + Math.random() * leafSpacing,
+                Math.random() * Math.PI * 2,
+                10 + Math.random() * 4,
+                Math.random() < 0.5 ? 1 : -1
+            );
+        }
+    }
+
+    // 終端の大きな葉（より穏やかな動き）
+    const endLeafAngle = Math.sin(leafTime * 0.2) * 0.05;
     
-    // 装飾的な溝（下部）
-    for (let i = bottomY + 30; i < canvas.height - 30; i += 30) {
-        ctx.fillStyle = pipeShadowColor;
-        ctx.fillRect(x + 10, i, pipeWidth - 20, 2);
-        ctx.fillStyle = pipeHighlightColor;
-        ctx.fillRect(x + 10, i + 2, pipeWidth - 20, 1);
+    // 上部の終端の葉（複数の層）
+    for (let layer = 0; layer < 4; layer++) {
+        const layerOffset = layer * 15;
+        drawLeaf(
+            x + pipeWidth/2 + Math.sin(leafTime * 0.2 + layer) * 2,
+            topHeight - 10 - layerOffset,
+            endLeafAngle + (Math.random() * 0.1 - 0.05),
+            45 + Math.random() * 4,
+            1
+        );
+        drawLeaf(
+            x + pipeWidth/2 - Math.sin(leafTime * 0.2 + layer) * 2,
+            topHeight - 5 - layerOffset,
+            Math.PI + endLeafAngle + (Math.random() * 0.1 - 0.05),
+            40 + Math.random() * 4,
+            1
+        );
+    }
+
+    // 下部の開始点の葉（複数の層）
+    for (let layer = 0; layer < 4; layer++) {
+        const layerOffset = layer * 15;
+        drawLeaf(
+            x + pipeWidth/2 + Math.sin(leafTime * 0.2 + Math.PI + layer) * 2,
+            bottomY + 10 + layerOffset,
+            endLeafAngle + (Math.random() * 0.1 - 0.05),
+            45 + Math.random() * 4,
+            1
+        );
+        drawLeaf(
+            x + pipeWidth/2 - Math.sin(leafTime * 0.2 + Math.PI + layer) * 2,
+            bottomY + 5 + layerOffset,
+            Math.PI + endLeafAngle + (Math.random() * 0.1 - 0.05),
+            40 + Math.random() * 4,
+            1
+        );
+    }
+
+    // 追加の小さな装飾的な葉（出現頻度を下げ、動きを穏やかに）
+    for (let i = 0; i < 6; i++) {
+        if (Math.random() < 0.4) {
+            const isTop = Math.random() < 0.5;
+            const yPos = isTop ? 
+                Math.random() * (topHeight - 30) + 15 : 
+                Math.random() * (canvas.height - bottomY - 30) + bottomY + 15;
+            
+            drawLeaf(
+                x + pipeWidth/2 + (Math.random() * 20 - 10),
+                yPos,
+                Math.random() * Math.PI * 2,
+                10 + Math.random() * 4,
+                Math.random() < 0.5 ? 1 : -1
+            );
+        }
     }
 }
 
