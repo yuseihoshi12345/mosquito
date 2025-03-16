@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #000000;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background-color: #000000;
+}
+
+canvas {
+    display: block;
+    width: 400px;
+    height: 600px;
+    border: none;
+    background-color: #87CEEB;
+}
+
+.score {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-180px);
+    font-size: 24px;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.game-over {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.game-over h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+}
+
+.game-over p {
+    font-size: 20px;
+    margin: 0 0 25px 0;
+    color: #666;
+}
+
+.hidden {
+    display: none;
+}
+
+#restartButton {
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+#restartButton:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+} 
